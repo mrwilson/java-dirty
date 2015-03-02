@@ -4,11 +4,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public class DirtyDBTest {
