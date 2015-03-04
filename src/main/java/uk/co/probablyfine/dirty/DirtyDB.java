@@ -65,11 +65,11 @@ public class DirtyDB<T> {
     return builder.build();
   }
 
-  public interface WithFile {
-    DirtyDB from(String path);
+  public interface WithFile<T> {
+    DirtyDB<T> from(String path);
   }
 
-  public static WithFile of(final Class<?> fooClass) {
-    return path -> new DirtyDB(path, fooClass);
+  public static <T> WithFile<T> of(final Class<T> fooClass) {
+    return path -> new DirtyDB<>(path, fooClass);
   }
 }
