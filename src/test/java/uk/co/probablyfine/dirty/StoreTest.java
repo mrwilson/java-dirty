@@ -14,14 +14,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class DirtyDBTest {
+public class StoreTest {
 
   @Test
   public void shouldPersistObjectWithDifferentTypedFields() throws Exception {
     File tempFile = File.createTempFile("dirty", "db");
     tempFile.deleteOnExit();
 
-    DirtyDB<HasEveryPrimitiveField> testObjectStore = DirtyDB.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
+    Store<HasEveryPrimitiveField> testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
 
     HasEveryPrimitiveField testObject = new HasEveryPrimitiveField(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
 
@@ -37,7 +37,7 @@ public class DirtyDBTest {
     File tempFile = File.createTempFile("fast", "db");
     tempFile.deleteOnExit();
 
-    DirtyDB<SmallObject> testObjectStore = DirtyDB.of(SmallObject.class).from(tempFile.getPath());
+    Store<SmallObject> testObjectStore = Store.of(SmallObject.class).from(tempFile.getPath());
 
     long elapsedTime = timeElapsed(() ->
         range(0, 100)
@@ -45,7 +45,7 @@ public class DirtyDBTest {
         .forEach(testObjectStore::put)
     );
 
-    assertTrue("Should have taken < 200ms, took "+elapsedTime, elapsedTime < 200);
+    assertTrue("Should have taken < 200ms, took " + elapsedTime, elapsedTime < 200);
 
   }
 
@@ -54,13 +54,13 @@ public class DirtyDBTest {
     File tempFile = File.createTempFile("flushed", "db");
     tempFile.deleteOnExit();
 
-    DirtyDB<HasEveryPrimitiveField> testObjectStore = DirtyDB.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
+    Store<HasEveryPrimitiveField> testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
     HasEveryPrimitiveField hasEveryPrimitiveField = new HasEveryPrimitiveField(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
     testObjectStore.put(hasEveryPrimitiveField);
 
     // Load up a new instance from the same file
 
-    testObjectStore = DirtyDB.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
+    testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
     List<HasEveryPrimitiveField> collect = testObjectStore.all().collect(toList());
 
     assertThat(collect.get(0), is(hasEveryPrimitiveField));

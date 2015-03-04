@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import static java.lang.Long.valueOf;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
-public class DirtyDB<T> {
+public class Store<T> {
 
   private final FileChannel fileChannel;
   private final MappedByteBuffer memoryMappedFile;
@@ -24,7 +24,7 @@ public class DirtyDB<T> {
   private final Class<T> klass;
   private int size;
 
-  public DirtyDB(String path, Class<T> klass) {
+  public Store(String path, Class<T> klass) {
     this.klass = klass;
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
     this.fileChannel = Nio.fileChannel(path);
@@ -66,10 +66,10 @@ public class DirtyDB<T> {
   }
 
   public interface WithFile<T> {
-    DirtyDB<T> from(String path);
+    Store<T> from(String path);
   }
 
   public static <T> WithFile<T> of(final Class<T> fooClass) {
-    return path -> new DirtyDB<>(path, fooClass);
+    return path -> new Store<>(path, fooClass);
   }
 }

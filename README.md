@@ -9,7 +9,7 @@ A file-based append-only object store, using memory mapped files.
 ### Creating a store.
 
 ```java
-DirtyDB<Foo> store = DirtyDB.of(Foo.class).from("/path/to/file"));
+Store<Foo> store = Store.of(Foo.class).from("/path/to/file"));
 ```
 
 ### Inserting an object
@@ -20,7 +20,7 @@ store.put(new Foo(1,2));
 ```java
 store.all().forEach(System.out::println);
 ```
-DirtyDB does not support look-ups, replacements, or deletions. Use `.all()` which exposes a Stream.
+java-dirty does not support look-ups, replacements, or deletions. Use `.all()` which exposes a Stream.
 
 ## Supported Fields
 
