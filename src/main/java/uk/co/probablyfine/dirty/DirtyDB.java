@@ -35,7 +35,8 @@ public class DirtyDB<T> {
   public void put(T t) {
     fields.forEach(field -> {
       Object unchecked = unchecked(() -> field.get(t));
-      memoryMappedFile.putInt((int) unchecked);
+      Types fieldType = Types.of(field.getType());
+      fieldType.getWriteField().accept(memoryMappedFile, unchecked);
     });
 
     this.size++;
@@ -49,8 +50,12 @@ public class DirtyDB<T> {
       T t = unchecked(klass::newInstance);
 
       fields.forEach(field -> {
-        unchecked(() -> field.set(t, memoryMappedFile.getInt(cursor.get())));
-        cursor.addAndGet(Types.INT.getSize());
+        final Types fieldType = Types.of(field.getType());
+        final Object apply = fieldType.getReadField().apply(memoryMappedFile, cursor.get());
+
+        unchecked(() -> field.set(t, apply));
+
+        cursor.addAndGet(fieldType.getSize());
       });
 
       builder.add(t);

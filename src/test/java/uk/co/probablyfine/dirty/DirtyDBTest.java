@@ -11,56 +11,20 @@ import static org.junit.Assert.assertThat;
 
 public class DirtyDBTest {
 
-  static class Foo {
-    int a, b, c;
-
-    public Foo(int a, int b, int c) {
-      this.a = a;
-      this.b = b;
-      this.c = c;
-    }
-
-    public Foo() {}
-
-    @Override
-    public String toString() {
-      return "Foo{" +
-          "a=" + a +
-          ", b=" + b +
-          ", c=" + c +
-          '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      Foo foo = (Foo) o;
-
-      if (a != foo.a) return false;
-      if (b != foo.b) return false;
-      if (c != foo.c) return false;
-
-      return true;
-    }
-
-  }
-
   @Test
-  public void shouldPersistMonoTypedObject() throws Exception {
+  public void shouldPersistObjectWithDifferentTypedFields() throws Exception {
     File tempFile = File.createTempFile("dirty", "db");
     tempFile.deleteOnExit();
 
-    DirtyDB<Foo> fooStore = DirtyDB.of(Foo.class).from(tempFile.getPath());
+    DirtyDB<TestObject> testObjectStore = DirtyDB.of(TestObject.class).from(tempFile.getPath());
 
-    Foo foo = new Foo(1, 2, 3);
+    TestObject testObject = new TestObject(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g');
 
-    fooStore.put(foo);
+    testObjectStore.put(testObject);
 
-    List<Foo> collect = fooStore.all().collect(toList());
+    List<TestObject> collect = testObjectStore.all().collect(toList());
 
-    assertThat(collect, hasItems(foo));
+    assertThat(collect, hasItems(testObject));
   }
 
 }
