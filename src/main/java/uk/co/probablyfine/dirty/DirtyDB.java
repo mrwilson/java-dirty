@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.lang.Long.valueOf;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class DirtyDB<T> {
@@ -28,8 +29,8 @@ public class DirtyDB<T> {
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
     this.fileChannel = Nio.fileChannel(path);
     this.offSet = Types.offSetForClass(klass);
-    this.memoryMappedFile = Nio.mapFile(fileChannel, 10*offSet);
-    this.size = 0;
+    this.size = valueOf(unchecked(fileChannel::size) / offSet).intValue();
+    this.memoryMappedFile = Nio.mapFile(fileChannel, 100_000 * offSet);
   }
 
   public void put(T t) {
@@ -38,8 +39,6 @@ public class DirtyDB<T> {
       Types fieldType = Types.of(field.getType());
       fieldType.getWriteField().accept(memoryMappedFile, unchecked);
     });
-
-    memoryMappedFile.force();
 
     this.size++;
   }

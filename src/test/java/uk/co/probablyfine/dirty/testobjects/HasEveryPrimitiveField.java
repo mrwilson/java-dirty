@@ -1,16 +1,16 @@
-package uk.co.probablyfine.dirty;
+package uk.co.probablyfine.dirty.testobjects;
 
-public class TestObject {
-  int a;
-  long b;
-  float c;
-  double d;
-  short e;
-  byte f;
-  char g;
-  boolean h;
+public class HasEveryPrimitiveField {
+  public int a;
+  public long b;
+  public float c;
+  public double d;
+  public short e;
+  public byte f;
+  public char g;
+  public boolean h;
 
-  public TestObject(int a, long b, float c, double d, short e, byte f, char g, boolean h) {
+  public HasEveryPrimitiveField(int a, long b, float c, double d, short e, byte f, char g, boolean h) {
     this.a = a;
     this.b = b;
     this.c = c;
@@ -21,14 +21,14 @@ public class TestObject {
     this.h = h;
   }
 
-  public TestObject(){}
+  public HasEveryPrimitiveField(){}
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    TestObject that = (TestObject) o;
+    HasEveryPrimitiveField that = (HasEveryPrimitiveField) o;
 
     if (a != that.a) return false;
     if (b != that.b) return false;
