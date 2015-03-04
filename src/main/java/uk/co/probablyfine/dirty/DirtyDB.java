@@ -39,6 +39,8 @@ public class DirtyDB<T> {
       fieldType.getWriteField().accept(memoryMappedFile, unchecked);
     });
 
+    memoryMappedFile.force();
+
     this.size++;
   }
 
