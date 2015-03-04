@@ -8,8 +8,9 @@ public class TestObject {
   short e;
   byte f;
   char g;
+  boolean h;
 
-  public TestObject(int a, long b, float c, double d, short e, byte f, char g) {
+  public TestObject(int a, long b, float c, double d, short e, byte f, char g, boolean h) {
     this.a = a;
     this.b = b;
     this.c = c;
@@ -17,6 +18,7 @@ public class TestObject {
     this.e = e;
     this.f = f;
     this.g = g;
+    this.h = h;
   }
 
   public TestObject(){}
@@ -26,15 +28,16 @@ public class TestObject {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    TestObject testObject = (TestObject) o;
+    TestObject that = (TestObject) o;
 
-    if (a != testObject.a) return false;
-    if (b != testObject.b) return false;
-    if (Float.compare(testObject.c, c) != 0) return false;
-    if (Double.compare(testObject.d, d) != 0) return false;
-    if (e != testObject.e) return false;
-    if (f != testObject.f) return false;
-    if (g != testObject.g) return false;
+    if (a != that.a) return false;
+    if (b != that.b) return false;
+    if (Float.compare(that.c, c) != 0) return false;
+    if (Double.compare(that.d, d) != 0) return false;
+    if (e != that.e) return false;
+    if (f != that.f) return false;
+    if (g != that.g) return false;
+    if (h != that.h) return false;
 
     return true;
   }
@@ -49,6 +52,7 @@ public class TestObject {
         ", e=" + e +
         ", f=" + f +
         ", g=" + g +
+        ", h=" + h +
         '}';
   }
 }

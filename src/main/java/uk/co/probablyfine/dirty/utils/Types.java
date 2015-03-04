@@ -7,13 +7,14 @@ import java.util.function.BiFunction;
 
 public enum Types {
 
-  BYTE(Byte.TYPE,      1, (buffer, object) -> buffer.put((byte) object),         ByteBuffer::get),
-  SHORT(Short.TYPE,    2, (buffer, object) -> buffer.putShort((short) object),   ByteBuffer::getShort),
-  INT(Integer.TYPE,    4, (buffer, object) -> buffer.putInt((int) object),       ByteBuffer::getInt),
-  LONG(Long.TYPE,      8, (buffer, object) -> buffer.putLong((long) object),     ByteBuffer::getLong),
-  FLOAT(Float.TYPE,    4, (buffer, object) -> buffer.putFloat((float) object),   ByteBuffer::getFloat),
-  DOUBLE(Double.TYPE,  8, (buffer, object) -> buffer.putDouble((double) object), ByteBuffer::getDouble),
-  CHAR(Character.TYPE, 2, (buffer, object) -> buffer.putChar((char) object),     ByteBuffer::getChar);
+  BYTE(Byte.TYPE,       1, (buffer, object) -> buffer.put((byte) object),         ByteBuffer::get),
+  SHORT(Short.TYPE,     2, (buffer, object) -> buffer.putShort((short) object),   ByteBuffer::getShort),
+  INT(Integer.TYPE,     4, (buffer, object) -> buffer.putInt((int) object),       ByteBuffer::getInt),
+  LONG(Long.TYPE,       8, (buffer, object) -> buffer.putLong((long) object),     ByteBuffer::getLong),
+  FLOAT(Float.TYPE,     4, (buffer, object) -> buffer.putFloat((float) object),   ByteBuffer::getFloat),
+  DOUBLE(Double.TYPE,   8, (buffer, object) -> buffer.putDouble((double) object), ByteBuffer::getDouble),
+  CHAR(Character.TYPE,  2, (buffer, object) -> buffer.putChar((char) object),     ByteBuffer::getChar),
+  BOOLEAN(Boolean.TYPE, 2, (buffer, object) -> buffer.put(fromBoolean((boolean) object)), (buffer, index) -> toBoolean(buffer.get(index)));
 
   private final Class<?> type;
   private final int size;
@@ -30,6 +31,14 @@ public enum Types {
   public static Types of(Class<?> type) {
     String name = type.getName().toUpperCase();
     return Types.valueOf(name);
+  }
+
+  public static byte fromBoolean(boolean b) {
+    return (byte) (b ? 0 : 1);
+  }
+
+  public static boolean toBoolean(byte s) {
+    return s == 0;
   }
 
   public static <T> int offSetForClass(Class<T> fooClass) {

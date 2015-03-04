@@ -18,7 +18,7 @@ public class DirtyDBTest {
 
     DirtyDB<TestObject> testObjectStore = DirtyDB.of(TestObject.class).from(tempFile.getPath());
 
-    TestObject testObject = new TestObject(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g');
+    TestObject testObject = new TestObject(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
 
     testObjectStore.put(testObject);
 
