@@ -1,20 +1,28 @@
 # java-dirty
 
-A file-based append-only object store, using memory mapped files and flushing to disk after writes.
+[![Build Status](https://travis-ci.org/mrwilson/java-dirty.png?branch=master)](https://travis-ci.org/mrwilson/java-dirty)
 
-### Usage
+A file-based append-only object store, using memory mapped files.
 
-Creating a store.
+## Usage
 
-```
+### Creating a store.
+
+```java
 DirtyDB<Foo> store = DirtyDB.of(Foo.class).from("/path/to/file"));
 ```
 
-To insert an object, use `.put()` e.g. `store.put(new Foo(1,2));`
+### Inserting an object
+```java
+store.put(new Foo(1,2));
+```
+### Iterating over all objects in the store
+```java
+store.all().forEach(System.out::println);
+```
+DirtyDB does not support look-ups, replacements, or deletions. Use `.all()` which exposes a Stream.
 
-DirtyDB does not support look-ups, replacements, or deletions. To read objects, use `.all()` which exposes a Stream.
-
-### Supported Fields
+## Supported Fields
 
 java-dirty will only persist primitive fields on objects. All primitive types are currently supported.
 
