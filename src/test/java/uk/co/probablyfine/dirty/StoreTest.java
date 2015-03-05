@@ -13,6 +13,7 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -75,6 +76,17 @@ public class StoreTest {
     List<Integer> resultContents = store.reverse().map(x -> x.a).collect(toList());
 
     assertThat(resultContents, hasItems(3, 2, 1));
+  }
+
+  @Test
+  public void shouldSupportDirectIndexAccess() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(4));
+    store.put(new SmallObject(5));
+    store.put(new SmallObject(6));
+
+    assertThat(store.get(1).a, is(5));
   }
 
   private File createTempFile() throws IOException {

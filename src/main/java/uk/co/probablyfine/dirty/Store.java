@@ -47,7 +47,7 @@ public class Store<T> {
     Stream.Builder<T> builder = Stream.builder();
 
     for(int index = 0; index < this.size; index++) {
-      addEntryToStream(builder, index);
+      builder.add(extractEntry(index));
     }
 
     return builder.build();
@@ -57,13 +57,13 @@ public class Store<T> {
     Stream.Builder<T> builder = Stream.builder();
 
     for(int index = (this.size-1); index >= 0; index--) {
-      addEntryToStream(builder, index);
+      builder.add(extractEntry(index));
     }
 
     return builder.build();
   }
 
-  private void addEntryToStream(Stream.Builder<T> builder, int index) throws IllegalAccessException {
+  private T extractEntry(int index) throws IllegalAccessException {
     AtomicInteger cursor = new AtomicInteger(index * this.offSet);
     T t = unchecked(klass::newInstance);
 
@@ -75,8 +75,11 @@ public class Store<T> {
 
       cursor.addAndGet(fieldType.getSize());
     });
+    return t;
+  }
 
-    builder.add(t);
+  public T get(int index) throws IllegalAccessException {
+    return extractEntry(index);
   }
 
   public interface WithFile<T> {
