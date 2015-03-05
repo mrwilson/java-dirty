@@ -1,6 +1,9 @@
 package uk.co.probablyfine.dirty.testobjects;
 
 public class HasEveryPrimitiveField {
+
+  public static final HasEveryPrimitiveField EXAMPLE = new HasEveryPrimitiveField(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
+
   public int a;
   public long b;
   public float c;

@@ -1,12 +1,15 @@
 package uk.co.probablyfine.dirty;
 
+import org.junit.Before;
 import org.junit.Test;
 import uk.co.probablyfine.dirty.testobjects.SmallObject;
 import uk.co.probablyfine.dirty.testobjects.HasEveryPrimitiveField;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -16,54 +19,54 @@ import static org.junit.Assert.assertTrue;
 
 public class StoreTest {
 
+  private File storeFile;
+
+  @Before
+  public void setUp() throws Exception {
+    storeFile = createTempFile();
+  }
+
   @Test
   public void shouldPersistObjectWithDifferentTypedFields() throws Exception {
-    File tempFile = File.createTempFile("dirty", "db");
-    tempFile.deleteOnExit();
+    Store<HasEveryPrimitiveField> store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
 
-    Store<HasEveryPrimitiveField> testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
+    store.put(HasEveryPrimitiveField.EXAMPLE);
 
-    HasEveryPrimitiveField testObject = new HasEveryPrimitiveField(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
+    List<HasEveryPrimitiveField> collect = store.all().collect(toList());
 
-    testObjectStore.put(testObject);
-
-    List<HasEveryPrimitiveField> collect = testObjectStore.all().collect(toList());
-
-    assertThat(collect, hasItems(testObject));
+    assertThat(collect, hasItems(HasEveryPrimitiveField.EXAMPLE));
   }
 
   @Test
   public void shouldNotSyncToDiskOnEachWrite() throws Exception {
-    File tempFile = File.createTempFile("fast", "db");
-    tempFile.deleteOnExit();
-
-    Store<SmallObject> testObjectStore = Store.of(SmallObject.class).from(tempFile.getPath());
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
     long elapsedTime = timeElapsed(() ->
         range(0, 100)
         .mapToObj(SmallObject::new)
-        .forEach(testObjectStore::put)
+        .forEach(store::put)
     );
 
     assertTrue("Should have taken < 200ms, took " + elapsedTime, elapsedTime < 200);
-
   }
 
   @Test
   public void shouldBeAbleToOpenAndReadExistingStoreFile() throws Exception {
-    File tempFile = File.createTempFile("flushed", "db");
-    tempFile.deleteOnExit();
-
-    Store<HasEveryPrimitiveField> testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
-    HasEveryPrimitiveField hasEveryPrimitiveField = new HasEveryPrimitiveField(1, 2L, 3.0f, 4.0d, (short) 5,(byte) 6, 'g', true);
-    testObjectStore.put(hasEveryPrimitiveField);
+    Store<HasEveryPrimitiveField> store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
+    store.put(HasEveryPrimitiveField.EXAMPLE);
 
     // Load up a new instance from the same file
 
-    testObjectStore = Store.of(HasEveryPrimitiveField.class).from(tempFile.getPath());
-    List<HasEveryPrimitiveField> collect = testObjectStore.all().collect(toList());
+    store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
+    List<HasEveryPrimitiveField> collect = store.all().collect(toList());
 
-    assertThat(collect.get(0), is(hasEveryPrimitiveField));
+    assertThat(collect.get(0), is(HasEveryPrimitiveField.EXAMPLE));
+  }
+
+  private File createTempFile() throws IOException {
+    File tempFile = File.createTempFile(randomUUID().toString(), ".dirty");
+    tempFile.deleteOnExit();
+    return tempFile;
   }
 
   private long timeElapsed(Runnable r) {
