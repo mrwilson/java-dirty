@@ -2,8 +2,8 @@ package uk.co.probablyfine.dirty;
 
 import org.junit.Before;
 import org.junit.Test;
-import uk.co.probablyfine.dirty.testobjects.SmallObject;
 import uk.co.probablyfine.dirty.testobjects.HasEveryPrimitiveField;
+import uk.co.probablyfine.dirty.testobjects.SmallObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,6 @@ import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -52,15 +51,30 @@ public class StoreTest {
 
   @Test
   public void shouldBeAbleToOpenAndReadExistingStoreFile() throws Exception {
-    Store<HasEveryPrimitiveField> store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
-    store.put(HasEveryPrimitiveField.EXAMPLE);
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    // Load up a new instance from the same file
+    store.put(new SmallObject(1));
+    store.put(new SmallObject(2));
+    store.put(new SmallObject(3));
 
-    store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
-    List<HasEveryPrimitiveField> collect = store.all().collect(toList());
+    store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    assertThat(collect.get(0), is(HasEveryPrimitiveField.EXAMPLE));
+    List<Integer> resultContents = store.all().map(x -> x.a).collect(toList());
+
+    assertThat(resultContents, hasItems(1, 2, 3));
+  }
+
+  @Test
+  public void shouldSupportReturningObjects_MostRecentFirst() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(1));
+    store.put(new SmallObject(2));
+    store.put(new SmallObject(3));
+
+    List<Integer> resultContents = store.reverse().map(x -> x.a).collect(toList());
+
+    assertThat(resultContents, hasItems(3, 2, 1));
   }
 
   private File createTempFile() throws IOException {

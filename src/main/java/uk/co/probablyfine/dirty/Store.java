@@ -43,26 +43,40 @@ public class Store<T> {
     this.size++;
   }
 
-  public Stream<T> all() {
+  public Stream<T> all() throws IllegalAccessException {
     Stream.Builder<T> builder = Stream.builder();
 
-    for (int i = 0; i < this.size; i++) {
-      AtomicInteger cursor = new AtomicInteger(i * this.offSet);
-      T t = unchecked(klass::newInstance);
-
-      fields.forEach(field -> {
-        final Types fieldType = Types.of(field.getType());
-        final Object apply = fieldType.getReadField().apply(memoryMappedFile, cursor.get());
-
-        unchecked(() -> field.set(t, apply));
-
-        cursor.addAndGet(fieldType.getSize());
-      });
-
-      builder.add(t);
+    for(int index = 0; index < this.size; index++) {
+      addEntryToStream(builder, index);
     }
 
     return builder.build();
+  }
+
+  public Stream<T> reverse() throws IllegalAccessException {
+    Stream.Builder<T> builder = Stream.builder();
+
+    for(int index = (this.size-1); index >= 0; index--) {
+      addEntryToStream(builder, index);
+    }
+
+    return builder.build();
+  }
+
+  private void addEntryToStream(Stream.Builder<T> builder, int index) throws IllegalAccessException {
+    AtomicInteger cursor = new AtomicInteger(index * this.offSet);
+    T t = unchecked(klass::newInstance);
+
+    fields.forEach(field -> {
+      final Types fieldType = Types.of(field.getType());
+      final Object apply = fieldType.getReadField().apply(memoryMappedFile, cursor.get());
+
+      unchecked(() -> field.set(t, apply));
+
+      cursor.addAndGet(fieldType.getSize());
+    });
+
+    builder.add(t);
   }
 
   public interface WithFile<T> {
