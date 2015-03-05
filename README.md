@@ -7,11 +7,9 @@ A file-based append-only object store, using memory mapped files.
 ## Usage
 
 ### Creating a store.
-
 ```java
 Store<Foo> store = Store.of(Foo.class).from("/path/to/file"));
 ```
-
 ### Inserting an object
 ```java
 store.put(new Foo(1,2));
@@ -20,7 +18,12 @@ store.put(new Foo(1,2));
 ```java
 store.all().forEach(System.out::println);
 ```
-java-dirty does not support look-ups, replacements, or deletions. Use `.all()` which exposes a Stream.
+### Iterate over objects, most recent first
+```java
+store.reverse().forEach(System.out::println);
+```
+
+java-dirty does not support look-ups, replacements, or deletions. Both `.all()` and `.reverse()` expose a Stream<Foo>.
 
 ## Supported Fields
 
@@ -29,4 +32,3 @@ java-dirty will only persist primitive fields on objects. All primitive types ar
 ### Performance
 
 (TODO)
-
