@@ -22,8 +22,16 @@ store.all().forEach(System.out::println);
 ```java
 store.reverse().forEach(System.out::println);
 ```
-
 java-dirty does not support look-ups, replacements, or deletions. Both `.all()` and `.reverse()` expose a Stream<Foo>.
+
+## Example: Look up most recent version of an object by index
+
+```java
+Optional<StoredObject> first = store
+    .reverse()
+    .filter(x -> x.indexField == valueToFind)
+    .findFirst();
+```
 
 ## Supported Fields
 
