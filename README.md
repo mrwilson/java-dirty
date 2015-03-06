@@ -26,16 +26,39 @@ store.reverse().forEach(System.out::println);
 ```java
 store.get(1234);
 ```
-
+### Observe each write
+```java
+store.observeWrites((object, index) ->
+  System.out.println("Stored "+object+" at "+index);
+);
+```
 java-dirty does not support replacements, or deletions. Both `.all()` and `.reverse()` expose a Stream<Foo>.
 
-## Example: Look up most recent version of an object by index
+## Examples
+
+### Look up most recent version of an object by index
 
 ```java
 Optional<StoredObject> first = store
     .reverse()
     .filter(x -> x.indexField == valueToFind)
     .findFirst();
+```
+
+### Build an lookup index using write observers
+
+```java
+Store<StoredObject> store = Store.of(StoredObject.class).from("/some/path");
+
+Map<Integer, Integer> index = new HashMap<>();
+
+store.observeWrites((object, location) -> {
+  index.put(object.indexField, location);
+});
+
+store.put(new StoredObject(1234,5));
+
+store.get(index.get(1234)); // StoredObject(1234,5);
 ```
 
 ## Supported Fields

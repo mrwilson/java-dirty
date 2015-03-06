@@ -8,6 +8,7 @@ import uk.co.probablyfine.dirty.testobjects.SmallObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -16,6 +17,8 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class StoreTest {
 
@@ -87,6 +90,23 @@ public class StoreTest {
     store.put(new SmallObject(6));
 
     assertThat(store.get(1).a, is(5));
+  }
+
+  @Test
+  public void shouldCallWriteObserverWithObjectAndIndex() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    BiConsumer<SmallObject, Integer> observeWriteFunction = mock(BiConsumer.class);
+
+    SmallObject first = new SmallObject(4);
+    SmallObject second = new SmallObject(4);
+
+    store.observeWrites(observeWriteFunction);
+
+    store.put(first);
+    store.put(second);
+
+    verify(observeWriteFunction).accept(first, 0);
+    verify(observeWriteFunction).accept(second, 1);
   }
 
   private File createTempFile() throws IOException {

@@ -7,8 +7,11 @@ import uk.co.probablyfine.dirty.utils.Types;
 import java.lang.reflect.Field;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +25,7 @@ public class Store<T> {
   private final int offSet;
   private final List<Field> fields;
   private final Class<T> klass;
+  private final List<BiConsumer<T,Integer>> writeObservers = new ArrayList<>();
   private int size;
 
   public Store(String path, Class<T> klass) {
@@ -39,6 +43,8 @@ public class Store<T> {
       Types fieldType = Types.of(field.getType());
       fieldType.getWriteField().accept(memoryMappedFile, unchecked);
     });
+
+    this.writeObservers.forEach(x -> x.accept(t, this.size));
 
     this.size++;
   }
@@ -80,6 +86,10 @@ public class Store<T> {
 
   public T get(int index) throws IllegalAccessException {
     return extractEntry(index);
+  }
+
+  public void observeWrites(BiConsumer<T, Integer> observeWriteFunction) {
+    this.writeObservers.add(observeWriteFunction);
   }
 
   public interface WithFile<T> {
