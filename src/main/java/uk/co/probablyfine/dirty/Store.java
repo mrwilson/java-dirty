@@ -34,7 +34,7 @@ public class Store<T> {
     this.fileChannel = Nio.fileChannel(path);
     this.offSet = Types.offSetForClass(klass);
     this.size = valueOf(unchecked(fileChannel::size) / offSet).intValue();
-    this.memoryMappedFile = Nio.mapFile(fileChannel, 100_000 * offSet);
+    this.memoryMappedFile = Nio.mapFile(fileChannel, 1024*1024*2);
   }
 
   public void put(T t) {
