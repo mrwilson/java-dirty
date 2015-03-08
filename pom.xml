@@ -8,10 +8,38 @@
     <artifactId>java-dirty</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <name>${artifactId}</name>
+
+    <description>
+        A file-based append-only object store, using memory mapped files for persistence.
+    </description>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
+
+    <developers>
+        <developer>
+            <name>Alexander Wilson</name>
+            <email>a.wilson@alumni.warwick.ac.uk</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/mrwilson/${artifactId}</url>
+        <connection>scm:git:git://github.com/mrwilson/${artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:mrwilson/${artifactId}.git</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -24,6 +52,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.9.5</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
