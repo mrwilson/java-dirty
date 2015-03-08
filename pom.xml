@@ -8,11 +8,13 @@
     <artifactId>java-dirty</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <description>
         A file-based append-only object store, using memory mapped files for persistence.
     </description>
+
+    <url>https://github.com/mrwilson/java-dirty</url>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -36,9 +38,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/mrwilson/${artifactId}</url>
-        <connection>scm:git:git://github.com/mrwilson/${artifactId}.git</connection>
-        <developerConnection>scm:git:git@github.com:mrwilson/${artifactId}.git</developerConnection>
+        <url>https://github.com/mrwilson/${project.artifactId}</url>
+        <connection>scm:git:git://github.com/mrwilson/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:mrwilson/${project.artifactId}.git</developerConnection>
     </scm>
 
     <dependencies>
