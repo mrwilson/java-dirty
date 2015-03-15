@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -65,6 +66,7 @@ public class StoreTest {
 
     List<Integer> resultContents = store.all().map(x -> x.a).collect(toList());
 
+    assertThat(resultContents.size(), is(3));
     assertThat(resultContents, hasItems(1, 2, 3));
   }
 
@@ -90,6 +92,21 @@ public class StoreTest {
     store.put(new SmallObject(6));
 
     assertThat(store.get(1).a, is(5));
+  }
+
+  @Test
+  public void shouldInferCorrectSizeOfExistingStoreFile() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(5));
+    store.put(new SmallObject(8));
+    store.put(new SmallObject(1));
+
+    store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    List<SmallObject> resultContents = store.all().collect(Collectors.toList());
+
+    assertThat(resultContents.size(), is(3));
   }
 
   @Test

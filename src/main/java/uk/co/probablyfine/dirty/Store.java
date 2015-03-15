@@ -8,14 +8,12 @@ import java.lang.reflect.Field;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.Long.valueOf;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class Store<T> {
@@ -33,20 +31,27 @@ public class Store<T> {
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
     this.fileChannel = Nio.fileChannel(path);
     this.offSet = Types.offSetForClass(klass);
-    this.size = valueOf(unchecked(fileChannel::size) / offSet).intValue();
-    this.memoryMappedFile = Nio.mapFile(fileChannel, 1024*1024*2);
+    this.memoryMappedFile = Nio.mapFile(fileChannel, 1024 * 1024 * 2);
+    this.size = memoryMappedFile.getInt(0);
   }
 
   public void put(T t) {
+    AtomicInteger currentPosition = new AtomicInteger(Types.INT.getSize() + this.size*this.offSet);
+
     fields.forEach(field -> {
       Object unchecked = unchecked(() -> field.get(t));
       Types fieldType = Types.of(field.getType());
-      fieldType.getWriteField().accept(memoryMappedFile, unchecked);
+      fieldType.getWriteField().accept(memoryMappedFile, currentPosition.get(), unchecked);
+      currentPosition.addAndGet(fieldType.getSize());
     });
 
     this.writeObservers.forEach(x -> x.accept(t, this.size));
+    this.incrementSize();
+  }
 
+  private void incrementSize() {
     this.size++;
+    this.memoryMappedFile.putInt(0, this.size);
   }
 
   public Stream<T> all() throws IllegalAccessException {
@@ -70,7 +75,7 @@ public class Store<T> {
   }
 
   private T extractEntry(int index) throws IllegalAccessException {
-    AtomicInteger cursor = new AtomicInteger(index * this.offSet);
+    final AtomicInteger cursor = new AtomicInteger(Types.INT.getSize() + (index * this.offSet));
     T t = unchecked(klass::newInstance);
 
     fields.forEach(field -> {
