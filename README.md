@@ -4,6 +4,14 @@
 
 A file-based append-only object store, using memory mapped files.
 
+## Downloading from Maven
+```xml
+<dependency>
+  <groupId>uk.co.probablyfine</groupId>
+  <artifactId>java-dirty</artifactId>
+  <version>1.0</version>
+</dependency>
+```
 ## Usage
 
 ### Creating a store.
