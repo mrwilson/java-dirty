@@ -97,6 +97,11 @@ public class Store<T> {
     this.writeObservers.add(observeWriteFunction);
   }
 
+  public void reset() {
+    this.size = 0;
+    this.memoryMappedFile.putInt(0, 0);
+  }
+
   public interface WithFile<T> {
     Store<T> from(String path);
   }

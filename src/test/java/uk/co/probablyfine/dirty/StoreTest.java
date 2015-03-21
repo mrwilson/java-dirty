@@ -126,6 +126,27 @@ public class StoreTest {
     verify(observeWriteFunction).accept(second, 1);
   }
 
+  @Test
+  public void shouldOverwriteOldEntriesWhenReset() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(5));
+    store.put(new SmallObject(8));
+
+    List<SmallObject> resultContents = store.all().collect(Collectors.toList());
+
+    assertThat(resultContents.size(), is(2));
+
+    store.reset();
+
+    store.put(new SmallObject(6));
+
+    resultContents = store.all().collect(Collectors.toList());
+
+    assertThat(resultContents.size(), is(1));
+    assertThat(resultContents.get(0).a, is(6));
+  }
+
   private File createTempFile() throws IOException {
     File tempFile = File.createTempFile(randomUUID().toString(), ".dirty");
     tempFile.deleteOnExit();
