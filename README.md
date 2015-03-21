@@ -9,7 +9,7 @@ A file-based append-only object store, using memory mapped files.
 <dependency>
   <groupId>uk.co.probablyfine</groupId>
   <artifactId>java-dirty</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 </dependency>
 ```
 ## Usage
@@ -33,6 +33,10 @@ store.reverse().forEach(System.out::println);
 ### Access an index directly
 ```java
 store.get(1234);
+```
+### Reset the entire store
+```java
+store.reset(); // Reset position to 0, overwriting old entries
 ```
 ### Observe each write
 ```java
