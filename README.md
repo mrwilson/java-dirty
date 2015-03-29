@@ -9,7 +9,7 @@ A file-based append-only object store, using memory mapped files.
 <dependency>
   <groupId>uk.co.probablyfine</groupId>
   <artifactId>java-dirty</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
 </dependency>
 ```
 ## Usage
@@ -29,6 +29,10 @@ store.all().forEach(System.out::println);
 ### Iterate over objects, most recent first
 ```java
 store.reverse().forEach(System.out::println);
+```
+### Iterate over objects from a starting index
+```java
+store.from(100).forEach(System.out::println);
 ```
 ### Access an index directly
 ```java
