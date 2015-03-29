@@ -147,6 +147,24 @@ public class StoreTest {
     assertThat(resultContents.get(0).a, is(6));
   }
 
+  @Test
+  public void shouldAcceptStartingIndexForStream() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(2));
+    store.put(new SmallObject(3));
+    store.put(new SmallObject(5));
+    store.put(new SmallObject(7));
+
+    store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    List<SmallObject> resultContents = store.from(2).collect(Collectors.toList());
+
+    assertThat(resultContents.size(),   is(2));
+    assertThat(resultContents.get(0).a, is(5));
+    assertThat(resultContents.get(1).a, is(7));
+  }
+
   private File createTempFile() throws IOException {
     File tempFile = File.createTempFile(randomUUID().toString(), ".dirty");
     tempFile.deleteOnExit();

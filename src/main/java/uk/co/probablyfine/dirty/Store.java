@@ -54,14 +54,18 @@ public class Store<T> {
     this.memoryMappedFile.putInt(0, this.size);
   }
 
-  public Stream<T> all() throws IllegalAccessException {
+  public Stream<T> from(int i) throws IllegalAccessException {
     Stream.Builder<T> builder = Stream.builder();
 
-    for(int index = 0; index < this.size; index++) {
+    for(int index = i; index < this.size; index++) {
       builder.add(extractEntry(index));
     }
 
     return builder.build();
+  }
+
+  public Stream<T> all() throws IllegalAccessException {
+    return from(0);
   }
 
   public Stream<T> reverse() throws IllegalAccessException {
