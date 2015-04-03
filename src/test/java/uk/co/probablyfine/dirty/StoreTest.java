@@ -8,6 +8,7 @@ import uk.co.probablyfine.dirty.testobjects.SmallObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -91,7 +93,19 @@ public class StoreTest {
     store.put(new SmallObject(5));
     store.put(new SmallObject(6));
 
-    assertThat(store.get(1).a, is(5));
+    Optional<SmallObject> smallObject = store.get(1);
+
+    assertTrue(smallObject.isPresent());
+    assertThat(smallObject.get().a, is(5));
+  }
+
+  @Test
+  public void shouldReturnEmptyOptionalForEntryThatDoesNotExist() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    Optional<SmallObject> smallObject = store.get(1);
+
+    assertFalse(smallObject.isPresent());
   }
 
   @Test

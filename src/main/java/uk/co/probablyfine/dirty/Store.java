@@ -9,11 +9,13 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Optional.ofNullable;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class Store<T> {
@@ -93,8 +95,8 @@ public class Store<T> {
     return t;
   }
 
-  public T get(int index) throws IllegalAccessException {
-    return extractEntry(index);
+  public Optional<T> get(int index) throws IllegalAccessException {
+    return index >= this.size ? Optional.empty() : ofNullable(extractEntry(index));
   }
 
   public void observeWrites(BiConsumer<T, Integer> observeWriteFunction) {

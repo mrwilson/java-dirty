@@ -36,7 +36,7 @@ store.from(100).forEach(System.out::println);
 ```
 ### Access an index directly
 ```java
-store.get(1234);
+Optional<Foo> foo = store.get(1234);
 ```
 ### Reset the entire store
 ```java
@@ -74,7 +74,7 @@ store.observeWrites((object, location) -> {
 
 store.put(new StoredObject(1234,5));
 
-store.get(index.get(1234)); // StoredObject(1234,5);
+store.get(index.get(1234)); // Optional\[StoredObject(1234,5)\];
 ```
 
 ## Supported Fields
