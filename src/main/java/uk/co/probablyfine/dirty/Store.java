@@ -17,10 +17,11 @@ import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
+import static uk.co.probablyfine.dirty.utils.Nio.fileChannel;
+import static uk.co.probablyfine.dirty.utils.Nio.mapFile;
 
 public class Store<T> {
 
-  private final FileChannel fileChannel;
   private final MappedByteBuffer memoryMappedFile;
   private final int offSet;
   private final List<Field> fields;
@@ -31,9 +32,8 @@ public class Store<T> {
   public Store(String path, Class<T> klass) {
     this.klass = klass;
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
-    this.fileChannel = Nio.fileChannel(path);
     this.offSet = Types.offSetForClass(klass);
-    this.memoryMappedFile = Nio.mapFile(fileChannel, 1024 * 1024 * 2);
+    this.memoryMappedFile = mapFile(fileChannel(path), 1024 * 1024 * 2);
     this.size = memoryMappedFile.getInt(0);
   }
 
@@ -56,7 +56,7 @@ public class Store<T> {
     this.memoryMappedFile.putInt(0, this.size);
   }
 
-  public Stream<T> from(int i) throws IllegalAccessException {
+  public Stream<T> from(int i) {
     Stream.Builder<T> builder = Stream.builder();
 
     for(int index = i; index < this.size; index++) {
@@ -66,11 +66,11 @@ public class Store<T> {
     return builder.build();
   }
 
-  public Stream<T> all() throws IllegalAccessException {
+  public Stream<T> all() {
     return from(0);
   }
 
-  public Stream<T> reverse() throws IllegalAccessException {
+  public Stream<T> reverse() {
     Stream.Builder<T> builder = Stream.builder();
 
     for(int index = (this.size-1); index >= 0; index--) {
@@ -80,9 +80,9 @@ public class Store<T> {
     return builder.build();
   }
 
-  private T extractEntry(int index) throws IllegalAccessException {
+  private T extractEntry(int index) {
     final AtomicInteger cursor = new AtomicInteger(Types.INT.getSize() + (index * this.offSet));
-    T t = unchecked(klass::newInstance);
+    final T t = unchecked(klass::newInstance);
 
     fields.forEach(field -> {
       final Types fieldType = Types.of(field.getType());
@@ -95,7 +95,7 @@ public class Store<T> {
     return t;
   }
 
-  public Optional<T> get(int index) throws IllegalAccessException {
+  public Optional<T> get(int index) {
     return index >= this.size ? Optional.empty() : ofNullable(extractEntry(index));
   }
 
