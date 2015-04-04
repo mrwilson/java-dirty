@@ -14,13 +14,9 @@ public class Nio {
     return unchecked(() -> new RandomAccessFile(file, "rw")).getChannel();
   }
 
-  public static MappedByteBuffer mapFile(FileChannel fileChannel, int size) {
-
-    long channelSize = unchecked(fileChannel::size);
-
+  public static MappedByteBuffer mapFile(FileChannel fileChannel, int initialPosition, int size) {
     return unchecked(() -> {
-      long size1 = channelSize == 0 ? 2 * size : channelSize * 2;
-      return fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, size1);
+      return fileChannel.map(FileChannel.MapMode.READ_WRITE, initialPosition, size);
     });
   }
 

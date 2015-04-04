@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -177,6 +178,36 @@ public class StoreTest {
     assertThat(resultContents.size(),   is(2));
     assertThat(resultContents.get(0).a, is(5));
     assertThat(resultContents.get(1).a, is(7));
+  }
+
+  @Test
+  public void shouldMapNewPartitionWhenEndIsReached() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    List<SmallObject> collect = IntStream
+        .rangeClosed(0, 1_000_000)
+        .mapToObj(SmallObject::new)
+        .collect(Collectors.toList());
+
+    collect.forEach(store::put);
+
+    assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
+  }
+
+  @Test
+  public void shouldReadBackMultiplePartitionsOnReload() {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    List<SmallObject> collect = IntStream
+        .rangeClosed(0, 1_000_000)
+        .mapToObj(SmallObject::new)
+        .collect(Collectors.toList());
+
+    collect.forEach(store::put);
+
+    store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
   }
 
   private File createTempFile() throws IOException {
