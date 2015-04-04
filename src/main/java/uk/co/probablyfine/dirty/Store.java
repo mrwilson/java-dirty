@@ -26,7 +26,7 @@ public class Store<T> {
   private final List<Field> fields;
   private final Class<T> klass;
   private final List<BiConsumer<T,Integer>> writeObservers = new ArrayList<>();
-  private final int allocatedSize;
+  private final int sizePerPartition;
   private final FileChannel fileChannel;
   private int size;
 
@@ -34,42 +34,28 @@ public class Store<T> {
     this.klass = klass;
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
     this.offSet = Types.offSetForClass(klass);
-    this.allocatedSize = 1024 * 1024 * 2;
+    this.sizePerPartition = 1024 * 1024 * 2;
     this.fileChannel = fileChannel(path);
     this.partitions = new ArrayList<>();
-    this.partitions.add(mapFile(fileChannel, 0, allocatedSize));
+    this.partitions.add(mapFile(fileChannel, 0, sizePerPartition));
     this.size = partitions.get(0).getInt(0);
-    System.out.println(this.size);
-    for (int i = 1; i <= (((this.size*this.offSet)+Types.INT.getSize())/this.allocatedSize); i++) {
-      this.partitions.add(mapFile(fileChannel, i*this.allocatedSize + 1, allocatedSize));
+    for (int i = 1; i <= partitionsForSize(this.size); i++) {
+      this.partitions.add(mapFile(fileChannel, i*this.sizePerPartition + 1, sizePerPartition));
     }
   }
 
   public void put(T t) {
-    int insertionIndex = Types.INT.getSize() + this.size * this.offSet;
+    AtomicInteger currentPosition = new AtomicInteger(Types.INT.getSize() + (this.size * this.offSet));
 
-    AtomicInteger currentPosition = new AtomicInteger(insertionIndex);
-
-    int totalCapacity = (this.partitions.size()*this.allocatedSize);
-    int nextSize = this.size+1;
-
-    if (totalCapacity < (nextSize*this.offSet + Types.INT.getSize())) {
-      this.partitions.add(mapFile(fileChannel, this.partitions.size()*this.allocatedSize + 1, allocatedSize));
+    if (this.partitions.size() <= partitionsForSize(this.size + 1)) {
+      this.partitions.add(mapFile(fileChannel, this.partitions.size()*this.sizePerPartition + 1, sizePerPartition));
     }
 
     fields.forEach(field -> {
       Object unchecked = unchecked(() -> field.get(t));
       Types fieldType = Types.of(field.getType());
       int partitionIndex = getPartition(currentPosition.get());
-      try {
-        fieldType.getWriteField().accept(partitions.get(partitionIndex), currentPosition.get()-(partitionIndex*this.allocatedSize), unchecked);
-      } catch (Exception e) {
-        System.out.println(partitionIndex);
-        System.out.println(currentPosition.get()-(partitionIndex*this.allocatedSize));
-        System.out.println(this.size);
-        System.out.println(this.allocatedSize/this.offSet);
-        throw new RuntimeException(e);
-      }
+      fieldType.getWriteField().accept(partitions.get(partitionIndex), currentPosition.get()-(partitionIndex*this.sizePerPartition), unchecked);
       currentPosition.addAndGet(fieldType.getSize());
     });
 
@@ -77,13 +63,13 @@ public class Store<T> {
     this.incrementSize();
   }
 
-  private int getPartition(int insertionIndex) {
-    //int i = (this.allocatedSize*this.partitions.size() - Types.INT.getSize()) / this.offSet;
-    int i1 = (insertionIndex) / this.allocatedSize;
-//    System.out.println(insertionIndex);
-//    System.out.println(i1);
+  private int getPartition(int globalInsertionPosition) {
+    return (globalInsertionPosition) / this.sizePerPartition;
+  }
 
-    return i1;
+  private int partitionsForSize(int numberOfObjects) {
+    int totalCapacity = (numberOfObjects * this.offSet) + Types.INT.getSize();
+    return totalCapacity/this.sizePerPartition;
   }
 
   private void incrementSize() {
@@ -123,7 +109,7 @@ public class Store<T> {
       final int partitionIndex = getPartition(cursor.get());
       final MappedByteBuffer partition = partitions.get(partitionIndex);
       final Types fieldType = Types.of(field.getType());
-      final Object apply = fieldType.getReadField().apply(partition, cursor.get()-(partitionIndex*allocatedSize));
+      final Object apply = fieldType.getReadField().apply(partition, cursor.get()-(partitionIndex* sizePerPartition));
 
       unchecked(() -> field.set(t, apply));
 
