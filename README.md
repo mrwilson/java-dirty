@@ -9,7 +9,7 @@ A file-based append-only object store, using memory mapped files.
 <dependency>
   <groupId>uk.co.probablyfine</groupId>
   <artifactId>java-dirty</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ```
 ## Usage
