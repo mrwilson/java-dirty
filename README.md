@@ -2,7 +2,11 @@
 
 [![Build Status](https://travis-ci.org/mrwilson/java-dirty.png?branch=master)](https://travis-ci.org/mrwilson/java-dirty)
 
-A file-based append-only object store, using memory mapped files.
+A fast file-based append-only object store, using memory mapped files.
+
+## Is java-dirty thread-safe?
+
+Absolutely not, but it's fast enough single-threaded that putting it behind e.g. a Disruptor will be fine. 
 
 ## Downloading from Maven
 ```xml
