@@ -4,9 +4,9 @@
 
 A fast file-based append-only object store, using memory mapped files.
 
-## Is java-dirty thread-safe?
+## Is java-dirty safe to use with multiple concurrent writers?
 
-Absolutely not, but it's fast enough single-threaded that putting it behind e.g. a Disruptor will be fine. 
+Absolutely not - but it's fast enough that putting it behind e.g. a Disruptor and consuming writes in a single thread should be fine. 
 
 ## Downloading from Maven
 ```xml
