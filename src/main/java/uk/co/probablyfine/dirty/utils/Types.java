@@ -2,7 +2,6 @@ package uk.co.probablyfine.dirty.utils;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 public enum Types {
@@ -18,8 +17,8 @@ public enum Types {
 
   private final Class<?> type;
   private final int size;
-  private TriConsumer<ByteBuffer, Integer, Object> writeField;
-  private BiFunction<ByteBuffer, Integer, Object> readField;
+  private transient TriConsumer<ByteBuffer, Integer, Object> writeField;
+  private transient BiFunction<ByteBuffer, Integer, Object> readField;
 
   Types(Class<?> type, int size, TriConsumer<ByteBuffer, Integer, Object> writeField, BiFunction<ByteBuffer, Integer, Object> readField) {
     this.type = type;
