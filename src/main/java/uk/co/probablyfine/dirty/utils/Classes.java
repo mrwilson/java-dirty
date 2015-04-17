@@ -7,6 +7,10 @@ import static java.util.Arrays.asList;
 
 public class Classes {
 
+  private Classes() {
+    //Utility classes have no public constructor
+  }
+
   public static Stream<Field> primitiveFields(Class<?> klass) {
     return asList(klass.getDeclaredFields())
         .stream()

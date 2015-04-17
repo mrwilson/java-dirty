@@ -8,7 +8,9 @@ import java.nio.channels.FileChannel;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class Nio {
-    private Nio() {} //Utility classes have no public constructor
+  private Nio() {
+    //Utility classes have no public constructor
+  }
 
   public static FileChannel fileChannel(String path) {
     File file = new File(path);
