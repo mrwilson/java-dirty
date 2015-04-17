@@ -129,10 +129,10 @@ public class Store<T> {
 
   public void reset() {
     this.size = 0;
-    for (int i = 1; i < partitions.size(); i++) {
-      partitions.remove(i);
-    }
-    this.partitions.get(0).putInt(0, 0);
+    MappedByteBuffer head = partitions.get(0);
+    partitions.clear();
+    partitions.add(head);
+    head.putInt(0, 0);
   }
 
   public interface WithFile<T> {
