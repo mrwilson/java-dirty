@@ -13,7 +13,7 @@ Absolutely not - but it's fast enough that putting it behind e.g. a Disruptor an
 <dependency>
   <groupId>uk.co.probablyfine</groupId>
   <artifactId>java-dirty</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
 </dependency>
 ```
 ## Usage
