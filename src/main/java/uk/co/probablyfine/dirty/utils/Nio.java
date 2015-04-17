@@ -8,6 +8,7 @@ import java.nio.channels.FileChannel;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class Nio {
+    private Nio() {} //Utility classes have no public constructor
 
   public static FileChannel fileChannel(String path) {
     File file = new File(path);
@@ -15,9 +16,7 @@ public class Nio {
   }
 
   public static MappedByteBuffer mapFile(FileChannel fileChannel, int initialPosition, int size) {
-    return unchecked(() -> {
-      return fileChannel.map(FileChannel.MapMode.READ_WRITE, initialPosition, size);
-    });
+    return unchecked(() -> fileChannel.map(FileChannel.MapMode.READ_WRITE, initialPosition, size));
   }
 
 }
