@@ -93,9 +93,10 @@ public class Store<T> {
 
   public Stream<T> reverse() {
     Stream.Builder<T> builder = Stream.builder();
-
-    for(int index = (this.size-1); index >= 0; index--) {
+    int index = this.size - 1;
+    while(index >= 0) {
       builder.add(extractEntry(index));
+      index--;
     }
 
     return builder.build();
