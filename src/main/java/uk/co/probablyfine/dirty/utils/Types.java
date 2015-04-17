@@ -2,7 +2,6 @@ package uk.co.probablyfine.dirty.utils;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 public enum Types {
