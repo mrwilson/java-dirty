@@ -22,6 +22,7 @@ import static uk.co.probablyfine.dirty.utils.Nio.mapFile;
 public class Store<T> {
 
   private final List<MappedByteBuffer> partitions;
+  private final MappedByteBuffer sizePartition;
   private final int offSet;
   private final List<Field> fields;
   private final Class<T> klass;
@@ -34,21 +35,21 @@ public class Store<T> {
     this.klass = klass;
     this.fields = Classes.primitiveFields(klass).collect(Collectors.toList());
     this.offSet = Types.offSetForClass(klass);
-    this.sizePerPartition = 1024 * 1024 * 2;
+    this.sizePerPartition = 1024 * this.offSet;
     this.fileChannel = fileChannel(path);
     this.partitions = new ArrayList<>();
-    this.partitions.add(mapFile(fileChannel, 0, sizePerPartition));
-    this.size = partitions.get(0).getInt(0);
-    for (int i = 1; i <= partitionsForSize(this.size); i++) {
-      this.partitions.add(mapFile(fileChannel, i*this.sizePerPartition + 1, sizePerPartition));
+    this.sizePartition = mapFile(fileChannel, 0, Types.INT.getSize());
+    this.size = sizePartition.getInt(0);
+    for (int i = 0; i < partitionsForSize(this.size)+1; i++) {
+      this.partitions.add(mapFile(fileChannel, Types.INT.getSize()+(i*this.sizePerPartition), sizePerPartition));
     }
   }
 
   public void put(T t) {
-    AtomicInteger currentPosition = new AtomicInteger(Types.INT.getSize() + (this.size * this.offSet));
+    AtomicInteger currentPosition = new AtomicInteger(this.size * this.offSet);
 
-    if (this.partitions.size() <= partitionsForSize(this.size + 1)) {
-      this.partitions.add(mapFile(fileChannel, this.partitions.size()*this.sizePerPartition + 1, sizePerPartition));
+    if ((this.size*this.offSet)/this.sizePerPartition >= this.partitions.size()) {
+      this.partitions.add(mapFile(fileChannel, Types.INT.getSize() + (this.partitions.size()*this.sizePerPartition), sizePerPartition));
     }
 
     fields.forEach(field -> {
@@ -74,7 +75,7 @@ public class Store<T> {
 
   private void incrementSize() {
     this.size++;
-    this.partitions.get(0).putInt(0, this.size);
+    this.sizePartition.putInt(0, this.size);
   }
 
   public Stream<T> from(int i) {
@@ -103,7 +104,7 @@ public class Store<T> {
   }
 
   private T extractEntry(int index) {
-    final AtomicInteger cursor = new AtomicInteger(Types.INT.getSize() + (index * this.offSet));
+    final AtomicInteger cursor = new AtomicInteger(index * this.offSet);
     final T t = unchecked(klass::newInstance);
 
     fields.forEach(field -> {
