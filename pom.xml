@@ -4,7 +4,7 @@
 
     <groupId>uk.co.probablyfine</groupId>
     <artifactId>java-dirty</artifactId>
-    <version>1.6</version>
+    <version>1.7-SNAPSHOT</version>
 
     <name>java-dirty</name>
 
@@ -39,7 +39,7 @@
         <url>https://github.com/mrwilson/${project.artifactId}</url>
         <connection>scm:git:git://github.com/mrwilson/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:mrwilson/${project.artifactId}.git</developerConnection>
-        <tag>java-dirty-1.6</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
