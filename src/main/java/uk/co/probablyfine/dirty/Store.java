@@ -130,10 +130,8 @@ public class Store<T> {
 
   public void reset() {
     this.size = 0;
-    MappedByteBuffer head = partitions.get(0);
-    partitions.clear();
-    partitions.add(head);
-    head.putInt(0, 0);
+    this.partitions.clear();
+    this.sizePartition.putInt(0, 0);
   }
 
   public interface WithFile<T> {
