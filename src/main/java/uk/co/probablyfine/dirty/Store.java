@@ -29,7 +29,7 @@ public class Store<T> {
   private final List<BiConsumer<T,Integer>> writeObservers = new ArrayList<>();
   private final int sizePerPartition;
   private final FileChannel fileChannel;
-  private int size;
+  private AtomicInteger size = new AtomicInteger(0);
 
   public Store(String path, Class<T> klass) {
     this.klass = klass;
@@ -39,16 +39,17 @@ public class Store<T> {
     this.fileChannel = fileChannel(path);
     this.partitions = new ArrayList<>();
     this.sizePartition = mapFile(fileChannel, 0, Types.INT.getSize());
-    this.size = sizePartition.getInt(0);
-    for (int i = 0; i < partitionsForSize(this.size)+1; i++) {
+    this.size.set(sizePartition.getInt(0));
+    for (int i = 0; i < partitionsForSize(this.size.get())+1; i++) {
       this.partitions.add(mapFile(fileChannel, Types.INT.getSize()+(i*this.sizePerPartition), sizePerPartition));
     }
   }
 
   public void put(T t) {
-    AtomicInteger currentPosition = new AtomicInteger(this.size * this.offSet);
+    int sizeAtInsertTime = this.size.getAndIncrement(); // claim value
+    AtomicInteger currentPosition = new AtomicInteger(sizeAtInsertTime * this.offSet);
 
-    if ((this.size*this.offSet)/this.sizePerPartition >= this.partitions.size()) {
+    if ((sizeAtInsertTime*this.offSet)/this.sizePerPartition >= this.partitions.size()) {
       this.partitions.add(mapFile(fileChannel, Types.INT.getSize() + (this.partitions.size()*this.sizePerPartition), sizePerPartition));
     }
 
@@ -60,7 +61,7 @@ public class Store<T> {
       currentPosition.addAndGet(fieldType.getSize());
     });
 
-    this.writeObservers.forEach(x -> x.accept(t, this.size));
+    this.writeObservers.forEach(x -> x.accept(t, sizeAtInsertTime));
     this.incrementSize();
   }
 
@@ -74,14 +75,13 @@ public class Store<T> {
   }
 
   private void incrementSize() {
-    this.size++;
-    this.sizePartition.putInt(0, this.size);
+    this.sizePartition.putInt(0, this.size.get());
   }
 
   public Stream<T> from(int i) {
     Stream.Builder<T> builder = Stream.builder();
 
-    for(int index = i; index < this.size; index++) {
+    for(int index = i; index < this.size.get(); index++) {
       builder.add(extractEntry(index));
     }
 
@@ -94,7 +94,7 @@ public class Store<T> {
 
   public Stream<T> reverse() {
     Stream.Builder<T> builder = Stream.builder();
-    int index = this.size - 1;
+    int index = this.size.get() - 1;
     while(index >= 0) {
       builder.add(extractEntry(index));
       index--;
@@ -121,7 +121,7 @@ public class Store<T> {
   }
 
   public Optional<T> get(int index) {
-    return index >= this.size ? Optional.empty() : ofNullable(extractEntry(index));
+    return index >= this.size.get() ? Optional.empty() : ofNullable(extractEntry(index));
   }
 
   public void observeWrites(BiConsumer<T, Integer> observeWriteFunction) {
@@ -129,7 +129,7 @@ public class Store<T> {
   }
 
   public void reset() {
-    this.size = 0;
+    this.size.set(0);
     this.partitions.clear();
     this.sizePartition.putInt(0, 0);
   }
