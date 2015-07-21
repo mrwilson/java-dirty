@@ -11,10 +11,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.lang.Math.abs;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.IntStream.range;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 import static uk.co.probablyfine.dirty.utils.Nio.fileChannel;
 import static uk.co.probablyfine.dirty.utils.Nio.mapFile;
@@ -40,7 +45,7 @@ public class Store<T> {
     this.partitions = new ArrayList<>();
     this.sizePartition = mapFile(fileChannel, 0, Types.INT.getSize());
     this.size.set(sizePartition.getInt(0));
-    for (int i = 0; i < partitionsForSize(this.size.get())+1; i++) {
+    for (int i = 0; i < partitionsForSize(size())+1; i++) {
       this.partitions.add(mapFile(fileChannel, Types.INT.getSize()+(i*this.sizePerPartition), sizePerPartition));
     }
   }
@@ -74,33 +79,30 @@ public class Store<T> {
     return totalCapacity/this.sizePerPartition;
   }
 
-  private void incrementSize() {
-    this.sizePartition.putInt(0, this.size.get());
+  private int size() {
+    return this.size.get();
   }
 
-  public Stream<T> from(int i) {
-    Stream.Builder<T> builder = Stream.builder();
+  private void incrementSize() {
+    this.sizePartition.putInt(0, size());
+  }
 
-    for(int index = i; index < this.size.get(); index++) {
-      builder.add(extractEntry(index));
-    }
-
-    return builder.build();
+  public Stream<T> from(int index) {
+    return entryRange(index, size() - index, i -> i + 1);
   }
 
   public Stream<T> all() {
-    return from(0);
+    return entryRange(0, size(), i -> i + 1);
   }
 
   public Stream<T> reverse() {
-    Stream.Builder<T> builder = Stream.builder();
-    int index = this.size.get() - 1;
-    while(index >= 0) {
-      builder.add(extractEntry(index));
-      index--;
-    }
+    return entryRange(size() - 1, size(), i -> i - 1);
+  }
 
-    return builder.build();
+  private Stream<T> entryRange(int start, int size, IntUnaryOperator mod) {
+    return IntStream.iterate(start, mod)
+        .limit(size)
+        .mapToObj(this::extractEntry);
   }
 
   private T extractEntry(int index) {
@@ -121,7 +123,7 @@ public class Store<T> {
   }
 
   public Optional<T> get(int index) {
-    return index >= this.size.get() ? Optional.empty() : ofNullable(extractEntry(index));
+    return index >= size() ? Optional.empty() : ofNullable(extractEntry(index));
   }
 
   public void observeWrites(BiConsumer<T, Integer> observeWriteFunction) {
