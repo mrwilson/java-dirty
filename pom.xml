@@ -5,7 +5,7 @@
     <groupId>uk.co.probablyfine</groupId>
     <artifactId>java-dirty-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.7</version>
+    <version>1.8-SNAPSHOT</version>
 
     <name>java-dirty-parent</name>
 
@@ -45,7 +45,7 @@
         <url>https://github.com/mrwilson/java-dirty</url>
         <connection>scm:git:git://github.com/mrwilson/java-dirty.git</connection>
         <developerConnection>scm:git:git@github.com:mrwilson/java-dirty.git</developerConnection>
-        <tag>java-dirty-parent-1.7</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
