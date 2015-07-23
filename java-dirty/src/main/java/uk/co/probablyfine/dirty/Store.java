@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -19,7 +18,6 @@ import java.util.stream.Stream;
 
 import static java.lang.Math.abs;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.IntStream.range;
 import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 import static uk.co.probablyfine.dirty.utils.Nio.fileChannel;
 import static uk.co.probablyfine.dirty.utils.Nio.mapFile;

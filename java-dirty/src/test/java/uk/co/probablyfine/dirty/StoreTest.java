@@ -9,10 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -54,9 +51,9 @@ public class StoreTest {
     Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
     long elapsedTime = timeElapsed(() ->
-        range(0, 100)
-        .mapToObj(SmallObject::new)
-        .forEach(store::put)
+            range(0, 100)
+                .mapToObj(SmallObject::new)
+                .forEach(store::put)
     );
 
     assertTrue("Should have taken < 200ms, took " + elapsedTime, elapsedTime < 200);
@@ -213,34 +210,6 @@ public class StoreTest {
     store = Store.of(SmallObject.class).from(storeFile.getPath());
 
     assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
-  }
-
-  @Test
-  public void shouldSupportMultipleConcurrentWriters() {
-    int numberOfWriters = 40;
-    CyclicBarrier barrier = new CyclicBarrier(numberOfWriters + 1);
-    Thread[] writeThreads = new Thread[numberOfWriters];
-
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
-
-    List<SmallObject> collect = IntStream
-        .rangeClosed(0, 10_000)
-        .mapToObj(SmallObject::new)
-        .collect(Collectors.toList());
-
-    for(int i=0; i<numberOfWriters; i++) {
-      writeThreads[i] = new Thread(() -> {
-        unchecked(() -> barrier.await());
-        collect.forEach(store::put);
-      });
-      writeThreads[i].start();
-    }
-
-    unchecked(() -> barrier.await());
-    unchecked(() -> Thread.sleep(200));
-
-    assertThat(store.all().count(), is(Integer.toUnsignedLong(collect.size() * numberOfWriters)));
-
   }
 
   private File createTempFile() throws IOException {

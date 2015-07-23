@@ -3,10 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.co.probablyfine</groupId>
-    <artifactId>java-dirty</artifactId>
+    <artifactId>java-dirty-parent</artifactId>
+    <packaging>pom</packaging>
     <version>1.7-SNAPSHOT</version>
 
-    <name>java-dirty</name>
+    <name>java-dirty-parent</name>
+
+    <modules>
+        <module>java-dirty-benchmarks</module>
+        <module>java-dirty</module>
+    </modules>
 
     <description>
         A file-based append-only object store, using memory mapped files for persistence.
@@ -36,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/mrwilson/${project.artifactId}</url>
-        <connection>scm:git:git://github.com/mrwilson/${project.artifactId}.git</connection>
-        <developerConnection>scm:git:git@github.com:mrwilson/${project.artifactId}.git</developerConnection>
+        <url>https://github.com/mrwilson/java-dirty</url>
+        <connection>scm:git:git://github.com/mrwilson/java-dirty.git</connection>
+        <developerConnection>scm:git:git@github.com:mrwilson/java-dirty.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
