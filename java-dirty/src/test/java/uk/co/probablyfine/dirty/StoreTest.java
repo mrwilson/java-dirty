@@ -1,5 +1,6 @@
 package uk.co.probablyfine.dirty;
 
+import com.sun.management.UnixOperatingSystemMXBean;
 import org.junit.Before;
 import org.junit.Test;
 import uk.co.probablyfine.dirty.testobjects.HasEveryPrimitiveField;
@@ -7,24 +8,21 @@ import uk.co.probablyfine.dirty.testobjects.SmallObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CyclicBarrier;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
+import static java.util.stream.IntStream.rangeClosed;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static uk.co.probablyfine.dirty.utils.Exceptions.unchecked;
 
 public class StoreTest {
 
@@ -186,8 +184,7 @@ public class StoreTest {
   public void shouldMapNewPartitionWhenEndIsReached() throws Exception {
     Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> collect = IntStream
-        .rangeClosed(0, 1_000_000)
+    List<SmallObject> collect = rangeClosed(0, 1_000_000)
         .mapToObj(SmallObject::new)
         .collect(Collectors.toList());
 
@@ -200,8 +197,7 @@ public class StoreTest {
   public void shouldReadBackMultiplePartitionsOnReload() {
     Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> collect = IntStream
-        .rangeClosed(0, 1_000_000)
+    List<SmallObject> collect = rangeClosed(0, 1_000_000)
         .mapToObj(SmallObject::new)
         .collect(Collectors.toList());
 
@@ -210,6 +206,41 @@ public class StoreTest {
     store = Store.of(SmallObject.class).from(storeFile.getPath());
 
     assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
+  }
+
+  @Test
+  public void shouldCloseUpAllFilesWhenRequested() throws Exception {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    long initialOpenFilesCount = openFileCount();
+
+    store.close();
+
+    assertThat(openFileCount(), is(initialOpenFilesCount-1));
+  }
+
+  @Test(expected = ClosedStoreException.class)
+  public void shouldThrowExceptionWhenClosed_ifTryingToWrite() {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.close();
+
+    store.put(new SmallObject(1));
+  }
+
+  @Test(expected = ClosedStoreException.class)
+  public void shouldThrowExceptionWhenClosed_ifTryingToRead() {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    store.put(new SmallObject(1));
+
+    store.close();
+
+    store.get(0);
+  }
+
+  private long openFileCount() {
+    return ((UnixOperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getOpenFileDescriptorCount();
   }
 
   private File createTempFile() throws IOException {

@@ -3,6 +3,7 @@ package uk.co.probablyfine.dirty;
 import uk.co.probablyfine.dirty.utils.Classes;
 import uk.co.probablyfine.dirty.utils.Types;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -33,6 +34,7 @@ public class Store<T> {
   private final int sizePerPartition;
   private final FileChannel fileChannel;
   private AtomicInteger size = new AtomicInteger(0);
+  private boolean closed = false;
 
   public Store(String path, Class<T> klass) {
     this.klass = klass;
@@ -49,6 +51,8 @@ public class Store<T> {
   }
 
   public void put(T t) {
+    if (this.closed) throw new ClosedStoreException();
+
     int sizeAtInsertTime = this.size.getAndIncrement(); // claim value
     AtomicInteger currentPosition = new AtomicInteger(sizeAtInsertTime * this.offSet);
 
@@ -104,6 +108,8 @@ public class Store<T> {
   }
 
   private T extractEntry(int index) {
+    if (this.closed) throw new ClosedStoreException();
+
     final AtomicInteger cursor = new AtomicInteger(index * this.offSet);
     final T t = unchecked(klass::newInstance);
 
@@ -132,6 +138,15 @@ public class Store<T> {
     this.size.set(0);
     this.partitions.clear();
     this.sizePartition.putInt(0, 0);
+  }
+
+  public void close() {
+    try {
+      this.fileChannel.close();
+      this.closed = true;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public interface WithFile<T> {

@@ -6,7 +6,7 @@ A fast file-based append-only object store, using memory mapped files.
 
 ## Is java-dirty safe to use with multiple concurrent writers?
 
-Absolutely not - but it's fast enough that putting it behind e.g. a Disruptor and consuming writes in a single thread should be fine. 
+Absolutely not - but it's fast enough that putting it behind e.g. a Disruptor and consuming writes in a single thread should be fine.
 
 ## Downloading from Maven
 ```xml
@@ -46,6 +46,11 @@ Optional<Foo> foo = store.get(1234);
 ```java
 store.reset(); // Reset position to 0, overwriting old entries
 ```
+### Close the store and its backing file
+```java
+store.close();
+```
+Trying to read from/write to a closed store will throw a ClosedStoreException.
 ### Observe each write
 ```java
 store.observeWrites((object, index) ->
@@ -78,7 +83,7 @@ store.observeWrites((object, location) -> {
 
 store.put(new StoredObject(1234,5));
 
-store.get(index.get(1234)); // Optional\[StoredObject(1234,5)\];
+store.get(index.get(1234)); // Optional[StoredObject(1234,5)];
 ```
 
 ## Supported Fields
@@ -87,4 +92,4 @@ java-dirty will only persist primitive fields on objects. All primitive types ar
 
 ### Performance
 
-(TODO)
+See the README in java-dirty-benchmarks for the latest
