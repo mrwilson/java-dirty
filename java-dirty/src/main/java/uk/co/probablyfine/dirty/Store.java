@@ -50,7 +50,7 @@ public class Store<T> {
     }
   }
 
-  public void put(T t) {
+  public int put(T t) {
     if (this.closed) throw new ClosedStoreException();
 
     int sizeAtInsertTime = this.size.getAndIncrement(); // claim value
@@ -70,6 +70,8 @@ public class Store<T> {
 
     this.writeObservers.forEach(x -> x.accept(t, sizeAtInsertTime));
     this.incrementSize();
+
+    return sizeAtInsertTime;
   }
 
   private int getPartition(int globalInsertionPosition) {

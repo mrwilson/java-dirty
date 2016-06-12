@@ -239,6 +239,17 @@ public class StoreTest {
     store.get(0);
   }
 
+  @Test
+  public void shouldReturnIndexOfEntryOnPut() {
+    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+
+    SmallObject object = new SmallObject(1);
+
+    assertThat(store.put(object), is(0));
+    assertThat(store.put(object), is(1));
+    assertThat(store.put(object), is(2));
+  }
+
   private long openFileCount() {
     return ((UnixOperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getOpenFileDescriptorCount();
   }
@@ -251,7 +262,7 @@ public class StoreTest {
 
   private long timeElapsed(Runnable r) {
     long time = System.currentTimeMillis();
-      r.run();
+    r.run();
     return System.currentTimeMillis() - time;
   }
 
