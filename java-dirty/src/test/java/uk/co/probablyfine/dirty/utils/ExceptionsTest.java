@@ -8,17 +8,18 @@ import static org.hamcrest.CoreMatchers.isA;
 
 public class ExceptionsTest {
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-  @Test
-  public void causeAndNestedCause() throws Exception {
-    expectedException.expect(Exceptions.StoreException.class);
-    expectedException.expectCause(isA(ArithmeticException.class));
-    Exceptions.unchecked(()-> foo());
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
-  }
+    @Test
+    public void causeAndNestedCause() throws Exception {
+        expectedException.expect(Exceptions.StoreException.class);
+        expectedException.expectCause(isA(ArithmeticException.class));
+        Exceptions.unchecked(() -> foo());
 
-  private void foo() {
-    int a = 1/0;
-  }
+    }
+
+    private void foo() {
+        int a = 1 / 0;
+    }
 }

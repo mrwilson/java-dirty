@@ -26,244 +26,244 @@ import static org.mockito.Mockito.verify;
 
 public class StoreTest {
 
-  private File storeFile;
+    private File storeFile;
 
-  @Before
-  public void setUp() throws Exception {
-    storeFile = createTempFile();
-  }
+    @Before
+    public void setUp() throws Exception {
+        storeFile = createTempFile();
+    }
 
-  @Test
-  public void shouldPersistObjectWithDifferentTypedFields() throws Exception {
-    Store<HasEveryPrimitiveField> store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
+    @Test
+    public void shouldPersistObjectWithDifferentTypedFields() throws Exception {
+        Store<HasEveryPrimitiveField> store = Store.of(HasEveryPrimitiveField.class).from(storeFile.getPath());
 
-    store.put(HasEveryPrimitiveField.EXAMPLE);
+        store.put(HasEveryPrimitiveField.EXAMPLE);
 
-    List<HasEveryPrimitiveField> collect = store.all().collect(toList());
+        List<HasEveryPrimitiveField> collect = store.all().collect(toList());
 
-    assertThat(collect, hasItems(HasEveryPrimitiveField.EXAMPLE));
-  }
+        assertThat(collect, hasItems(HasEveryPrimitiveField.EXAMPLE));
+    }
 
-  @Test
-  public void shouldNotSyncToDiskOnEachWrite() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldNotSyncToDiskOnEachWrite() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    long elapsedTime = timeElapsed(() ->
-            range(0, 100)
-                .mapToObj(SmallObject::new)
-                .forEach(store::put)
-    );
+        long elapsedTime = timeElapsed(() ->
+                range(0, 100)
+                    .mapToObj(SmallObject::new)
+                    .forEach(store::put)
+        );
 
-    assertTrue("Should have taken < 200ms, took " + elapsedTime, elapsedTime < 200);
-  }
+        assertTrue("Should have taken < 200ms, took " + elapsedTime, elapsedTime < 200);
+    }
 
-  @Test
-  public void shouldBeAbleToOpenAndReadExistingStoreFile() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldBeAbleToOpenAndReadExistingStoreFile() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(1));
-    store.put(new SmallObject(2));
-    store.put(new SmallObject(3));
+        store.put(new SmallObject(1));
+        store.put(new SmallObject(2));
+        store.put(new SmallObject(3));
 
-    store = Store.of(SmallObject.class).from(storeFile.getPath());
+        store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<Integer> resultContents = store.all().map(x -> x.a).collect(toList());
+        List<Integer> resultContents = store.all().map(x -> x.a).collect(toList());
 
-    assertThat(resultContents.size(), is(3));
-    assertThat(resultContents, hasItems(1, 2, 3));
-  }
+        assertThat(resultContents.size(), is(3));
+        assertThat(resultContents, hasItems(1, 2, 3));
+    }
 
-  @Test
-  public void shouldSupportReturningObjects_MostRecentFirst() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldSupportReturningObjects_MostRecentFirst() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(1));
-    store.put(new SmallObject(2));
-    store.put(new SmallObject(3));
+        store.put(new SmallObject(1));
+        store.put(new SmallObject(2));
+        store.put(new SmallObject(3));
 
-    List<Integer> resultContents = store.reverse().map(x -> x.a).collect(toList());
+        List<Integer> resultContents = store.reverse().map(x -> x.a).collect(toList());
 
-    assertThat(resultContents, hasItems(3, 2, 1));
-  }
+        assertThat(resultContents, hasItems(3, 2, 1));
+    }
 
-  @Test
-  public void shouldSupportDirectIndexAccess() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldSupportDirectIndexAccess() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(4));
-    store.put(new SmallObject(5));
-    store.put(new SmallObject(6));
+        store.put(new SmallObject(4));
+        store.put(new SmallObject(5));
+        store.put(new SmallObject(6));
 
-    Optional<SmallObject> smallObject = store.get(1);
+        Optional<SmallObject> smallObject = store.get(1);
 
-    assertTrue(smallObject.isPresent());
-    assertThat(smallObject.get().a, is(5));
-  }
+        assertTrue(smallObject.isPresent());
+        assertThat(smallObject.get().a, is(5));
+    }
 
-  @Test
-  public void shouldReturnEmptyOptionalForEntryThatDoesNotExist() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldReturnEmptyOptionalForEntryThatDoesNotExist() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    Optional<SmallObject> smallObject = store.get(1);
+        Optional<SmallObject> smallObject = store.get(1);
 
-    assertFalse(smallObject.isPresent());
-  }
+        assertFalse(smallObject.isPresent());
+    }
 
-  @Test
-  public void shouldInferCorrectSizeOfExistingStoreFile() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldInferCorrectSizeOfExistingStoreFile() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(5));
-    store.put(new SmallObject(8));
-    store.put(new SmallObject(1));
+        store.put(new SmallObject(5));
+        store.put(new SmallObject(8));
+        store.put(new SmallObject(1));
 
-    store = Store.of(SmallObject.class).from(storeFile.getPath());
+        store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> resultContents = store.all().collect(Collectors.toList());
+        List<SmallObject> resultContents = store.all().collect(Collectors.toList());
 
-    assertThat(resultContents.size(), is(3));
-  }
+        assertThat(resultContents.size(), is(3));
+    }
 
-  @Test
-  public void shouldCallWriteObserverWithObjectAndIndex() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
-    BiConsumer<SmallObject, Integer> observeWriteFunction = mock(BiConsumer.class);
+    @Test
+    public void shouldCallWriteObserverWithObjectAndIndex() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+        BiConsumer<SmallObject, Integer> observeWriteFunction = mock(BiConsumer.class);
 
-    SmallObject first = new SmallObject(4);
-    SmallObject second = new SmallObject(4);
+        SmallObject first = new SmallObject(4);
+        SmallObject second = new SmallObject(4);
 
-    store.observeWrites(observeWriteFunction);
+        store.observeWrites(observeWriteFunction);
 
-    store.put(first);
-    store.put(second);
+        store.put(first);
+        store.put(second);
 
-    verify(observeWriteFunction).accept(first, 0);
-    verify(observeWriteFunction).accept(second, 1);
-  }
+        verify(observeWriteFunction).accept(first, 0);
+        verify(observeWriteFunction).accept(second, 1);
+    }
 
-  @Test
-  public void shouldOverwriteOldEntriesWhenReset() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldOverwriteOldEntriesWhenReset() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(5));
-    store.put(new SmallObject(8));
+        store.put(new SmallObject(5));
+        store.put(new SmallObject(8));
 
-    List<SmallObject> resultContents = store.all().collect(Collectors.toList());
+        List<SmallObject> resultContents = store.all().collect(Collectors.toList());
 
-    assertThat(resultContents.size(), is(2));
+        assertThat(resultContents.size(), is(2));
 
-    store.reset();
+        store.reset();
 
-    store.put(new SmallObject(6));
+        store.put(new SmallObject(6));
 
-    resultContents = store.all().collect(Collectors.toList());
+        resultContents = store.all().collect(Collectors.toList());
 
-    assertThat(resultContents.size(), is(1));
-    assertThat(resultContents.get(0).a, is(6));
-  }
+        assertThat(resultContents.size(), is(1));
+        assertThat(resultContents.get(0).a, is(6));
+    }
 
-  @Test
-  public void shouldAcceptStartingIndexForStream() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldAcceptStartingIndexForStream() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(2));
-    store.put(new SmallObject(3));
-    store.put(new SmallObject(5));
-    store.put(new SmallObject(7));
+        store.put(new SmallObject(2));
+        store.put(new SmallObject(3));
+        store.put(new SmallObject(5));
+        store.put(new SmallObject(7));
 
-    store = Store.of(SmallObject.class).from(storeFile.getPath());
+        store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> resultContents = store.from(2).collect(Collectors.toList());
+        List<SmallObject> resultContents = store.from(2).collect(Collectors.toList());
 
-    assertThat(resultContents.size(),   is(2));
-    assertThat(resultContents.get(0).a, is(5));
-    assertThat(resultContents.get(1).a, is(7));
-  }
+        assertThat(resultContents.size(), is(2));
+        assertThat(resultContents.get(0).a, is(5));
+        assertThat(resultContents.get(1).a, is(7));
+    }
 
-  @Test
-  public void shouldMapNewPartitionWhenEndIsReached() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldMapNewPartitionWhenEndIsReached() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> collect = rangeClosed(0, 1_000_000)
-        .mapToObj(SmallObject::new)
-        .collect(Collectors.toList());
+        List<SmallObject> collect = rangeClosed(0, 1_000_000)
+            .mapToObj(SmallObject::new)
+            .collect(Collectors.toList());
 
-    collect.forEach(store::put);
+        collect.forEach(store::put);
 
-    assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
-  }
+        assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
+    }
 
-  @Test
-  public void shouldReadBackMultiplePartitionsOnReload() {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldReadBackMultiplePartitionsOnReload() {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    List<SmallObject> collect = rangeClosed(0, 1_000_000)
-        .mapToObj(SmallObject::new)
-        .collect(Collectors.toList());
+        List<SmallObject> collect = rangeClosed(0, 1_000_000)
+            .mapToObj(SmallObject::new)
+            .collect(Collectors.toList());
 
-    collect.forEach(store::put);
+        collect.forEach(store::put);
 
-    store = Store.of(SmallObject.class).from(storeFile.getPath());
+        store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
-  }
+        assertThat(store.all().collect(Collectors.toList()).size(), is(collect.size()));
+    }
 
-  @Test
-  public void shouldCloseUpAllFilesWhenRequested() throws Exception {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldCloseUpAllFilesWhenRequested() throws Exception {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    long initialOpenFilesCount = openFileCount();
+        long initialOpenFilesCount = openFileCount();
 
-    store.close();
+        store.close();
 
-    assertThat(openFileCount(), is(initialOpenFilesCount-1));
-  }
+        assertThat(openFileCount(), is(initialOpenFilesCount - 1));
+    }
 
-  @Test(expected = ClosedStoreException.class)
-  public void shouldThrowExceptionWhenClosed_ifTryingToWrite() {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test(expected = ClosedStoreException.class)
+    public void shouldThrowExceptionWhenClosed_ifTryingToWrite() {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.close();
+        store.close();
 
-    store.put(new SmallObject(1));
-  }
+        store.put(new SmallObject(1));
+    }
 
-  @Test(expected = ClosedStoreException.class)
-  public void shouldThrowExceptionWhenClosed_ifTryingToRead() {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test(expected = ClosedStoreException.class)
+    public void shouldThrowExceptionWhenClosed_ifTryingToRead() {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    store.put(new SmallObject(1));
+        store.put(new SmallObject(1));
 
-    store.close();
+        store.close();
 
-    store.get(0);
-  }
+        store.get(0);
+    }
 
-  @Test
-  public void shouldReturnIndexOfEntryOnPut() {
-    Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
+    @Test
+    public void shouldReturnIndexOfEntryOnPut() {
+        Store<SmallObject> store = Store.of(SmallObject.class).from(storeFile.getPath());
 
-    SmallObject object = new SmallObject(1);
+        SmallObject object = new SmallObject(1);
 
-    assertThat(store.put(object), is(0));
-    assertThat(store.put(object), is(1));
-    assertThat(store.put(object), is(2));
-  }
+        assertThat(store.put(object), is(0));
+        assertThat(store.put(object), is(1));
+        assertThat(store.put(object), is(2));
+    }
 
-  private long openFileCount() {
-    return ((UnixOperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getOpenFileDescriptorCount();
-  }
+    private long openFileCount() {
+        return ((UnixOperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getOpenFileDescriptorCount();
+    }
 
-  private File createTempFile() throws IOException {
-    File tempFile = File.createTempFile(randomUUID().toString(), ".dirty");
-    tempFile.deleteOnExit();
-    return tempFile;
-  }
+    private File createTempFile() throws IOException {
+        File tempFile = File.createTempFile(randomUUID().toString(), ".dirty");
+        tempFile.deleteOnExit();
+        return tempFile;
+    }
 
-  private long timeElapsed(Runnable r) {
-    long time = System.currentTimeMillis();
-    r.run();
-    return System.currentTimeMillis() - time;
-  }
+    private long timeElapsed(Runnable r) {
+        long time = System.currentTimeMillis();
+        r.run();
+        return System.currentTimeMillis() - time;
+    }
 
 }
